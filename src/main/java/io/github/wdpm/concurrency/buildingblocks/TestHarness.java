@@ -10,10 +10,9 @@ import java.util.concurrent.CountDownLatch;
  * @author Brian Goetz and Tim Peierls
  */
 public class TestHarness {
-    public long timeTasks(int nThreads, final Runnable task)
-            throws InterruptedException {
+    public long timeTasks(int nThreads, final Runnable task) throws InterruptedException {
         final CountDownLatch startGate = new CountDownLatch(1);
-        final CountDownLatch endGate = new CountDownLatch(nThreads);
+        final CountDownLatch endGate   = new CountDownLatch(nThreads);
 
         for (int i = 0; i < nThreads; i++) {
             Thread t = new Thread() {
@@ -32,8 +31,11 @@ public class TestHarness {
             t.start();
         }
 
+        // 5个线程准备就绪
         long start = System.nanoTime();
+        // 打开开始阀门，线程开始赛跑运行，每个线程结束后都会将endGate减1
         startGate.countDown();
+        // 等待endGate变为0
         endGate.await();
         long end = System.nanoTime();
         return end - start;
@@ -41,7 +43,8 @@ public class TestHarness {
 
     public static void main(String[] args) {
         try {
-            new TestHarness().timeTasks(5, new SimpleTask());
+            long useTime = new TestHarness().timeTasks(5, new SimpleTask());
+            System.out.println("use time: " + useTime);
         } catch (InterruptedException e) {
             e.printStackTrace();
         }

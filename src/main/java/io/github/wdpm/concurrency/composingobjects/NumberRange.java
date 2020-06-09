@@ -24,8 +24,7 @@ public class NumberRange {
 
     public void setUpper(int i) {
         // Warning -- unsafe check-then-act
-        if (i < lower.get())
-            throw new IllegalArgumentException("can't set upper to " + i + " < lower");
+        if (i < lower.get()) throw new IllegalArgumentException("can't set upper to " + i + " < lower");
         upper.set(i);
     }
 
@@ -33,4 +32,6 @@ public class NumberRange {
         return (i >= lower.get() && i <= upper.get());
     }
 }
+
+// 假设值域为(0,10) A线程调用setLower(5) B线程调用setUpper(4)，偶发时序中，可能产生(5,4)这种错误的结果
 

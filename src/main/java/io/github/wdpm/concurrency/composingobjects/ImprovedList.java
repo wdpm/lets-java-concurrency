@@ -25,8 +25,8 @@ public class ImprovedList<T> implements List<T> {
 
     public synchronized boolean putIfAbsent(T x) {
         boolean contains = list.contains(x);
-        if (contains)
-            list.add(x);
+        // put if absent
+        if (!contains) list.add(x);
         return !contains;
     }
 

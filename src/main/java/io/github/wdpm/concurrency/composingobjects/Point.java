@@ -12,6 +12,7 @@ import io.github.wdpm.concurrency.annotations.Immutable;
  */
 @Immutable
 public class Point {
+    // final -> Immutable
     public final int x, y;
 
     public Point(int x, int y) {
