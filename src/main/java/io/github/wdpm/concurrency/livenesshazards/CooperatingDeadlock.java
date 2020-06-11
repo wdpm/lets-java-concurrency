@@ -10,6 +10,8 @@ import java.util.Set;
  * CooperatingDeadlock
  * <p/>
  * Lock-ordering deadlock between cooperating objects
+ * <p>
+ * 两个锁以不同的顺序被线程占有，发生死锁风险
  *
  * @author Brian Goetz and Tim Peierls
  */
@@ -32,10 +34,10 @@ public class CooperatingDeadlock {
             return location;
         }
 
+        // setLocation() 先获取taxi的锁，然后获取dispatcher的锁
         public synchronized void setLocation(Point location) {
             this.location = location;
-            if (location.equals(destination))
-                dispatcher.notifyAvailable(this);
+            if (location.equals(destination)) dispatcher.notifyAvailable(this);
         }
 
         public synchronized Point getDestination() {
@@ -65,6 +67,7 @@ public class CooperatingDeadlock {
             availableTaxis.add(taxi);
         }
 
+        // getImage()先获取Dispatcher的锁，然后获取taxi的锁。
         public synchronized Image getImage() {
             Image image = new Image();
             for (Taxi t : taxis)

@@ -32,6 +32,7 @@ class CooperatingNoDeadlock {
 
         public synchronized void setLocation(Point location) {
             boolean reachedDestination;
+            // here
             synchronized (this) {
                 this.location = location;
                 reachedDestination = location.equals(destination);
@@ -65,8 +66,10 @@ class CooperatingNoDeadlock {
             availableTaxis.add(taxi);
         }
 
+        // remove synchronized key-word in method
         public Image getImage() {
             Set<Taxi> copy;
+            // here sync taxi
             synchronized (this) {
                 copy = new HashSet<Taxi>(taxis);
             }
