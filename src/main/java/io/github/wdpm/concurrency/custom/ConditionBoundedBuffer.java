@@ -34,6 +34,7 @@ public class ConditionBoundedBuffer<T> {
         try {
             while (count == items.length)
                 notFull.await();
+
             items[tail] = x;
             if (++tail == items.length)
                 tail = 0;

@@ -216,8 +216,8 @@ A中断B，仅仅代表A要求B在达成某个方便停止的关键点时，停�
 - 先是正确性，然后才是性能。
 - Amdahl定律：基于可并行化和串行化的组件的比例，程序理论上能加速多少。
 - 分拆锁和分离锁的技术
-  - 分拆锁：把一个锁分成多个。=> read lock + write lock
-  - 分离锁：把一个锁分成多个锁。=> ConcurrentHashMap的JDK 7的segment lock
+  - 分拆锁：把一个锁分成多个。?例如全局锁this包含A，B域，但是我只想更改A，我没有必要同步this。
+  - 分离锁：把一个锁分成多个锁。?
 - 上下文切换：保存当前运行线程的执行上下文，重建新调入线程的执行上下文。
 - 上下文切换的开销一般是5000-10000时钟周期，几ms。
 - 自旋CAS适合短期的等待，挂起suspending适合长时间等待。
@@ -231,5 +231,59 @@ A中断B，仅仅代表A要求B在达成某个方便停止的关键点时，停�
 - 减小锁的粒度：分拆锁（lock splitting）和分离锁（lock striping）。
 采用独立的锁，守护多个独立的state变量。
   - 分拆锁。参阅 ServerStatusBeforeSplit 和 ServerStatusAfterSplit
-  - 分离锁。
-  
+  - 分离锁。分拆锁被扩展，分成锁块的集合，归属独立。参阅 StripedMap。
+    - JDK 7中ConcurrentHashMap 使用16个锁的array，每个锁保护Hash Bucket的1/16。Bucket N由第 (N mod 16) 锁守护。
+      这样，ConcurrentHashMap最高支持16个并发的写操作。
+    - 难点：当ConcurrentHashMap需要扩展，重排，放入更大的Bucket时，需要获取所有分离锁。
+    - 难点：size如何计算？通常优化是插入和删除时更新一个独立的计数器。
+    ConcurrentHashMap 通过枚举每个条目获得size，将这个值加入每一个条目，避免全局计数。~~条目~~？
+- 独占锁的替代方案：在读多写少时，ReadWriteLock一般比独占锁，并发性更好。   
+- 现代处理的底层并发原语，CAS自旋。
+- 同步的Map并发性差的原因：全局独占锁，一次只能一个线程访问Map。
+- 可以使用非独占锁或者非阻塞锁来取代独占锁。
+--- 
+- 性能测试包括：吞吐量、响应性、可伸缩性。
+---
+> 代码未读
+- ReentrantLock实现了Lock接口，提供与synchronized相同的互斥和可见性保证。
+  - 获得ReentrantLock的锁 = 进入 synchronized块
+  - 释放ReentrantLock的锁 = 退出 synchronized块
+- 锁必须在finally块释放
+- 可定时和可轮询的锁，都由tryLock方法实现。
+- ReentrantLock是高级工具：可定时、可轮询、可中断的锁获取，公平队列等。
+- 互斥是保守的加锁策略，避免“写/写”，“写/读”的重叠，但是也滥杀了“读/读”这种无害的情况。
+- 读锁和写锁的互动
+  - 释放优先。写者释放锁，读者和写着都在队列中。应该选择哪一个？
+  - 读者闯入。允许读者闯入到写者之前，可以提高并发性，但是却可能带来写者饥饿。
+  - 重进入。读锁和写锁支持重入吗？
+  - 降级。线程拥有写锁，它能够在不释放该锁的情况下获得读锁吗？
+  - 升级。
+- ReentrantReadWriteLock可以是公平或者非公平的。公平就是：先到先得。
+- 采用读写锁封装普通的Map。参阅 ReadWriteMap
+---
+- 状态依赖的可阻塞行为的结构
+```java
+void blockingAction() throws InterruptedException{
+    acquire lock on object state
+    while(precondition does not hold){
+        release lock
+        wait until precondition might hold
+        optionally fail if interrupted or timeout expires
+        reacquire lock
+    }
+    perform action
+    releaselock
+}
+```
+- 如果状态依赖的操作在处理先验条件时失败，可以
+  - 抛出异常，传给调用者
+  - 或者返回错误状态，
+  - 或者保持阻塞直到对象转入正确的状态。
+- 将先验条件失败传给调用者。参阅 GrumpyBoundedBuffer
+- 利用轮询和休眠实现拙劣的阻塞。参阅 SleepyBoundedBuffer
+- 是否存在一种方式：保证某个条件为真时，线程可以及时地苏醒过来呢？条件队列的诞生。
+- 条件队列的元素是等待相关条件的线程，不同于传统队列（元素是数据项）。
+- 有限缓存使用条件队列。参阅 BoundedBuffer 和 ConditionBoundedBuffer
+- 条件谓词。是先验条件的第一站，在一个操作和状态之间建立起依赖关系。
+- 锁对象和条件队列对象，必须为同一个对象。
+- 每条件队列-多条件谓词，非常常见，BoundedBuffer为“非满”和“非空”两个谓词使用了相同的条件队列。

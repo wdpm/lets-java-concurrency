@@ -22,9 +22,10 @@ public class TestThreadPool {
 
     @Test
     public void testPoolExpansion() throws InterruptedException {
-        int MAX_SIZE = 10;
-        ExecutorService exec = Executors.newFixedThreadPool(MAX_SIZE, threadFactory);
+        int             MAX_SIZE = 10;
+        ExecutorService exec     = Executors.newFixedThreadPool(MAX_SIZE, threadFactory);
 
+        // 10* 10 =100 tasks
         for (int i = 0; i < 10 * MAX_SIZE; i++)
             exec.execute(new Runnable() {
                 public void run() {
@@ -35,8 +36,11 @@ public class TestThreadPool {
                     }
                 }
             });
+        // 给一点时间来给threadPool反应，例如增加线程。虽然做法有点诡异
         for (int i = 0; i < 20 && threadFactory.numCreated.get() < MAX_SIZE; i++)
             Thread.sleep(100);
+
+        // 验证是否真的是固定大小的线程池
         System.out.println(threadFactory.numCreated.get());
         assertEquals(threadFactory.numCreated.get(), MAX_SIZE);
         exec.shutdownNow();
@@ -47,8 +51,8 @@ class TestingThreadFactory implements ThreadFactory {
     /**
      * 线程工厂的全局统计信息
      */
-    public final AtomicInteger numCreated = new AtomicInteger();
-    private final ThreadFactory factory = Executors.defaultThreadFactory();
+    public final  AtomicInteger numCreated = new AtomicInteger();
+    private final ThreadFactory factory    = Executors.defaultThreadFactory();
 
     public Thread newThread(Runnable r) {
         numCreated.incrementAndGet();

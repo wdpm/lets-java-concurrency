@@ -10,19 +10,23 @@ import java.util.concurrent.Semaphore;
  * <p/>
  * Bounded buffer using \Semaphore
  *
+ * <li>不变约束：两个信号量的总和，一定等于缓存长度</li>
+ *
  * @author Brian Goetz and Tim Peierls
  */
 @ThreadSafe
 public class SemaphoreBoundedBuffer<E> {
-    private final Semaphore availableItems, availableSpaces;
+    // 表示已有项的数量
+    private final Semaphore availableItems;
+    // 表示剩余空间
+    private final Semaphore availableSpaces;
     @GuardedBy("this")
-    private final E[] items;
+    private final E[]       items;
     @GuardedBy("this")
-    private int putPosition = 0, takePosition = 0;
+    private       int       putPosition = 0, takePosition = 0;
 
     public SemaphoreBoundedBuffer(int capacity) {
-        if (capacity <= 0)
-            throw new IllegalArgumentException();
+        if (capacity <= 0) throw new IllegalArgumentException();
         availableItems = new Semaphore(0);
         availableSpaces = new Semaphore(capacity);
         items = (E[]) new Object[capacity];
@@ -37,15 +41,15 @@ public class SemaphoreBoundedBuffer<E> {
     }
 
     public void put(E x) throws InterruptedException {
-        availableSpaces.acquire();
+        availableSpaces.acquire();//剩余空间-1
         doInsert(x);
-        availableItems.release();
+        availableItems.release();//已有项 +1
     }
 
     public E take() throws InterruptedException {
-        availableItems.acquire();
+        availableItems.acquire();//已有项-1
         E item = doExtract();
-        availableSpaces.release();
+        availableSpaces.release();//剩余空间+1
         return item;
     }
 

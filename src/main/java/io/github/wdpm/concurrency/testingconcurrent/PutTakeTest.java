@@ -26,9 +26,9 @@ public class PutTakeTest {
 
     public PutTakeTest(int capacity, int npairs, int ntrials) {
         this.bb = new SemaphoreBoundedBuffer<Integer>(capacity);
-        this.nTrials = ntrials;
         this.nPairs = npairs;
-        this.barrier = new CyclicBarrier(npairs * 2 + 1);
+        this.nTrials = ntrials;
+        this.barrier = new CyclicBarrier(npairs * 2 + 1);//注意这里是npairs * 2 + 1
     }
 
     void test() {
@@ -38,6 +38,7 @@ public class PutTakeTest {
                 pool.execute(new Consumer());
             }
             barrier.await(); // wait for all threads to be ready
+            System.out.println(barrier.getNumberWaiting());//0
             barrier.await(); // wait for all threads to finish
             System.out.println(putSum.get() == takeSum.get());
         } catch (Exception e) {
@@ -45,6 +46,7 @@ public class PutTakeTest {
         }
     }
 
+    // checksum
     static int xorShift(int y) {
         y ^= (y << 6);
         y ^= (y >>> 21);

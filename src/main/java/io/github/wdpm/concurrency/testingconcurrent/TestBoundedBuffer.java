@@ -65,18 +65,16 @@ public class TestBoundedBuffer {
         double[] data = new double[100000];
     }
 
-    /**
-     * 没有理解
-     */
     @Test
     public void testLeak() throws InterruptedException {
-        SemaphoreBoundedBuffer<Big> bb = new SemaphoreBoundedBuffer<Big>(CAPACITY);
-        int heapSize1 = snapshotHeap();
+        SemaphoreBoundedBuffer<Big> bb        = new SemaphoreBoundedBuffer<Big>(CAPACITY);
+        int                         heapSize1 = snapshotHeap();// mock get heap snapshot
         for (int i = 0; i < CAPACITY; i++)
             bb.put(new Big());
         for (int i = 0; i < CAPACITY; i++)
             bb.take();
-        int heapSize2 = snapshotHeap();
+        int heapSize2 = snapshotHeap();// mock get heap snapshot
+        // 如果没有发生内存泄露，heapSize1 - heapSize2 应该相差不大
         assertTrue(Math.abs(heapSize1 - heapSize2) < THRESHOLD);
     }
 

@@ -46,6 +46,7 @@ public class StripedMap {
 
     public void clear() {
         for (int i = 0; i < buckets.length; i++) {
+            // 顺序地，逐次获取每一个Bucket的锁
             synchronized (locks[i % N_LOCKS]) {
                     buckets[i] = null;
             }

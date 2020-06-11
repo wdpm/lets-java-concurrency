@@ -6,6 +6,8 @@ import io.github.wdpm.concurrency.annotations.ThreadSafe;
  * GrumpyBoundedBuffer
  * <p/>
  * Bounded buffer that balks when preconditions are not met
+ * <p>
+ * 先验条件不满足时，直接抛出异常
  *
  * @author Brian Goetz and Tim Peierls
  */
@@ -34,7 +36,7 @@ public class GrumpyBoundedBuffer<V> extends BaseBoundedBuffer<V> {
 
 class ExampleUsage {
     private GrumpyBoundedBuffer<String> buffer;
-    int SLEEP_GRANULARITY = 50;
+    int SLEEP_GRANULARITY = 50;//睡眠粒度
 
     void useBuffer() throws InterruptedException {
         while (true) {

@@ -37,8 +37,7 @@ public class SleepyBoundedBuffer<V> extends BaseBoundedBuffer<V> {
     public V take() throws InterruptedException {
         while (true) {
             synchronized (this) {
-                if (!isEmpty())
-                    return doTake();
+                if (!isEmpty()) return doTake();
             }
             Thread.sleep(SLEEP_GRANULARITY);
         }

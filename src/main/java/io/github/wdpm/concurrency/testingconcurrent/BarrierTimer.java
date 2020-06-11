@@ -16,8 +16,7 @@ public class BarrierTimer implements Runnable {
         if (!started) {
             started = true;
             startTime = t;
-        } else
-            endTime = t;
+        } else endTime = t;
     }
 
     public synchronized void clear() {
@@ -26,5 +25,13 @@ public class BarrierTimer implements Runnable {
 
     public synchronized long getTime() {
         return endTime - startTime;
+    }
+
+    public static void main(String[] args) throws InterruptedException {
+        BarrierTimer barrierTimer = new BarrierTimer();
+        barrierTimer.run();//set started
+        Thread.sleep(3000);
+        barrierTimer.run();//set end
+        System.out.println(barrierTimer.getTime());
     }
 }
