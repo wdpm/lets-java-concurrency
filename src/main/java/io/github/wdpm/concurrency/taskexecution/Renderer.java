@@ -23,6 +23,7 @@ public abstract class Renderer {
         final List<ImageInfo> info = scanForImageInfo(source);
         CompletionService<ImageData> completionService =
                 new ExecutorCompletionService<ImageData>(executor);
+        // 并行下载图片
         for (final ImageInfo imageInfo : info)
             completionService.submit(new Callable<ImageData>() {
                 public ImageData call() {
@@ -33,6 +34,7 @@ public abstract class Renderer {
         renderText(source);
 
         try {
+            // 第一个图片就绪，马上渲染该图片
             for (int t = 0, n = info.size(); t < n; t++) {
                 Future<ImageData> f = completionService.take();
                 ImageData imageData = f.get();

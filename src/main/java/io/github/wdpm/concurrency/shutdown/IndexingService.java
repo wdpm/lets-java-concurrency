@@ -13,13 +13,13 @@ import java.util.concurrent.LinkedBlockingQueue;
  * @author Brian Goetz and Tim Peierls
  */
 public class IndexingService {
-    private static final int CAPACITY = 1000;
-    private static final File POISON = new File("");
-    private final IndexerThread consumer = new IndexerThread();
-    private final CrawlerThread producer = new CrawlerThread();
-    private final BlockingQueue<File> queue;
-    private final FileFilter fileFilter;
-    private final File root;
+    private static final int                 CAPACITY = 1000;
+    private static final File                POISON   = new File("");//poison pill
+    private final        IndexerThread       consumer = new IndexerThread();
+    private final        CrawlerThread       producer = new CrawlerThread();
+    private final        BlockingQueue<File> queue;
+    private final        FileFilter          fileFilter;
+    private final        File                root;
 
     public IndexingService(File root, final FileFilter fileFilter) {
         this.root = root;
@@ -43,6 +43,7 @@ public class IndexingService {
             } finally {
                 while (true) {
                     try {
+                        // 生产者队列末尾放入一个药丸
                         queue.put(POISON);
                         break;
                     } catch (InterruptedException e1) { /* retry */
@@ -69,6 +70,7 @@ public class IndexingService {
             try {
                 while (true) {
                     File file = queue.take();
+                    // 当消费者吃到药丸就GG了
                     if (file == POISON)
                         break;
                     else

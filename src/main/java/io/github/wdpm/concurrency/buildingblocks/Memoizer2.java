@@ -21,6 +21,7 @@ public class Memoizer2<A, V> implements Computable<A, V> {
     public V compute(A arg) throws InterruptedException {
         V result = cache.get(arg);
         if (result == null) {
+            // 缺陷：可能存在两个线程A，B同时调用compute方法，造成重复计算。这是一个漏洞
             result = c.compute(arg);
             cache.put(arg, result);
         }

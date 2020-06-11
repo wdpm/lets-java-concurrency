@@ -35,9 +35,9 @@ public class TimedRun {
             timedRun(new PrintTask(), 1L, TimeUnit.SECONDS);
 
             /**
-             * 任务停止运行了,但是如果线程在活着,主线程也不会退出
+             * 任务运行完毕，主线程主动关闭线程池。
              */
-//            taskExec.shutdown();
+            taskExec.shutdown();
         } catch (InterruptedException e) {
             System.out.println("任务被取消!");
         }

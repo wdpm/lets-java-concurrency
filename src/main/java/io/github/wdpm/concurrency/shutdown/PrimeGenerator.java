@@ -35,7 +35,7 @@ public class PrimeGenerator implements Runnable {
         while (!cancelled) {
             p = p.nextProbablePrime();
             synchronized (this) {
-                primes.add(p);
+                primes.add(p);//同步的块范围很小，也就是add()需要同步
             }
         }
     }
@@ -57,5 +57,10 @@ public class PrimeGenerator implements Runnable {
             generator.cancel();
         }
         return generator.get();
+    }
+
+    public static void main(String[] args) throws InterruptedException {
+        System.out.println(aSecondOfPrimes());
+        exec.shutdown();
     }
 }

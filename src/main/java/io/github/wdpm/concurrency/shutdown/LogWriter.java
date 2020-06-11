@@ -40,7 +40,7 @@ public class LogWriter {
         public void run() {
             try {
                 while (true)
-                    writer.println(queue.take());
+                    writer.println(queue.take());//take()响应中断，如果日志线程修改为能响应InterruptedException，那就可以停止服务
             } catch (InterruptedException ignored) {
             } finally {
                 writer.close();

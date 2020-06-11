@@ -25,6 +25,11 @@ public class ThreadPerTaskWebServer {
         }
     }
 
+    /**
+     * 这个方法必须为线程安全的
+     *
+     * @param connection
+     */
     private static void handleRequest(Socket connection) {
         // request-handling logic here
     }

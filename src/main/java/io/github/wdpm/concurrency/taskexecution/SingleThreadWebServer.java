@@ -23,5 +23,9 @@ public class SingleThreadWebServer {
 
     private static void handleRequest(Socket connection) {
         // request-handling logic here
+        // open your browser and visit 127.0.0.1
+        System.out.println("echo");
+
+        // 一次只能处理一个请求
     }
 }

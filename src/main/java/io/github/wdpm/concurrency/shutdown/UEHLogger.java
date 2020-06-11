@@ -11,6 +11,8 @@ import java.util.logging.Logger;
  * 处理未捕获的异常
  */
 public class UEHLogger implements Thread.UncaughtExceptionHandler {
+
+    // refer java.lang.Thread.UncaughtExceptionHandler
     public void uncaughtException(Thread t, Throwable e) {
         Logger logger = Logger.getAnonymousLogger();
         logger.log(Level.SEVERE, "Thread terminated with exception: " + t.getName(), e);
@@ -27,6 +29,7 @@ public class UEHLogger implements Thread.UncaughtExceptionHandler {
         thread.setUncaughtExceptionHandler(new UEHLogger());
         thread.start();
 
+        // 主线程等待上面的线程抛异常
         try {
             Thread.sleep(3000L);
         } catch (InterruptedException e) {

@@ -43,6 +43,7 @@ public class TrackingExecutor extends AbstractExecutorService {
     }
 
     public List<Runnable> getCancelledTasks() {
+        // 如果exec还没有终止，就抛出异常
         if (!exec.isTerminated())
             throw new IllegalStateException(/*...*/);
         return new ArrayList<Runnable>(tasksCancelledAtShutdown);

@@ -19,6 +19,7 @@ public class Memoizer<A, V> implements Computable<A, V> {
     }
 
     public V compute(final A arg) throws InterruptedException {
+        // while loop 是表示不断重试，有必要吗？
         while (true) {
             Future<V> f = cache.get(arg);
             if (f == null) {
@@ -28,6 +29,7 @@ public class Memoizer<A, V> implements Computable<A, V> {
                     }
                 };
                 FutureTask<V> ft = new FutureTask<V>(eval);
+                // ConcurrentHashMap的putIfAbsent是原子化的，修复了两个线程可能同时计算的漏洞
                 f = cache.putIfAbsent(arg, ft);
                 if (f == null) {
                     f = ft;
@@ -37,7 +39,7 @@ public class Memoizer<A, V> implements Computable<A, V> {
             try {
                 return f.get();
             } catch (CancellationException e) {
-                cache.remove(arg, f);
+                cache.remove(arg, f);//添加了取消任务的处理
             } catch (ExecutionException e) {
                 throw LaunderThrowable.launderThrowable(e.getCause());
             }

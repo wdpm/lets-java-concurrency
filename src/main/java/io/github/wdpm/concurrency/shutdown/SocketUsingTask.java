@@ -71,10 +71,9 @@ class CancellingExecutor extends ThreadPoolExecutor {
         super(corePoolSize, maximumPoolSize, keepAliveTime, unit, workQueue, threadFactory, handler);
     }
 
+    // newTaskFor 封装非标准取消
     protected <T> RunnableFuture<T> newTaskFor(Callable<T> callable) {
-        if (callable instanceof CancellableTask)
-            return ((CancellableTask<T>) callable).newTask();
-        else
-            return super.newTaskFor(callable);
+        if (callable instanceof CancellableTask) return ((CancellableTask<T>) callable).newTask();
+        else return super.newTaskFor(callable);
     }
 }

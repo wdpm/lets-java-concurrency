@@ -24,6 +24,7 @@ public class PrimeProducer extends Thread {
                 queue.put(p = p.nextProbablePrime());
         } catch (InterruptedException consumed) {
             /* Allow thread to exit */
+            // 被中断时，这个线程这里的策略是优雅退出
         }
     }
 

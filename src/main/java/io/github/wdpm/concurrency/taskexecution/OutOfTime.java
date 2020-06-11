@@ -15,6 +15,7 @@ import static java.util.concurrent.TimeUnit.SECONDS;
 
 public class OutOfTime {
     public static void main(String[] args) throws Exception {
+        // Timer task抛出的异常会终止整个timer线程
         Timer timer = new Timer();
         timer.schedule(new ThrowTask(), 1);
         SECONDS.sleep(1);

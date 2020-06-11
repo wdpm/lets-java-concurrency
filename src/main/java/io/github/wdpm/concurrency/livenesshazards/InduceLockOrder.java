@@ -21,6 +21,7 @@ public class InduceLockOrder {
                 }
             }
         }
+        // 使用 System.identityHashCode 指定获取锁的顺序
         int fromHash = System.identityHashCode(fromAcct);
         int toHash = System.identityHashCode(toAcct);
 

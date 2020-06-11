@@ -14,17 +14,18 @@ public class TimeBudget {
     private static ExecutorService exec = Executors.newCachedThreadPool();
 
     public List<TravelQuote> getRankedTravelQuotes(TravelInfo travelInfo, Set<TravelCompany> companies,
-                                                   Comparator<TravelQuote> ranking, long time, TimeUnit unit)
-            throws InterruptedException {
+                                                   Comparator<TravelQuote> ranking, long time,
+                                                   TimeUnit unit) throws InterruptedException {
+
         List<QuoteTask> tasks = new ArrayList<QuoteTask>();
         for (TravelCompany company : companies)
             tasks.add(new QuoteTask(company, travelInfo));
 
         List<Future<TravelQuote>> futures = exec.invokeAll(tasks, time, unit);
 
-        List<TravelQuote> quotes =
-                new ArrayList<TravelQuote>(tasks.size());
+        List<TravelQuote>   quotes   = new ArrayList<TravelQuote>(tasks.size());
         Iterator<QuoteTask> taskIter = tasks.iterator();
+
         for (Future<TravelQuote> f : futures) {
             QuoteTask task = taskIter.next();
             try {
@@ -42,9 +43,12 @@ public class TimeBudget {
 
 }
 
+/**
+ * 用 travelInfo 去问某一个TravelCompany，得到TravelQuote
+ */
 class QuoteTask implements Callable<TravelQuote> {
     private final TravelCompany company;
-    private final TravelInfo travelInfo;
+    private final TravelInfo    travelInfo;
 
     public QuoteTask(TravelCompany company, TravelInfo travelInfo) {
         this.company = company;

@@ -28,6 +28,7 @@ public class RenderWithTimeBudget {
             ad = f.get(timeLeft, NANOSECONDS);
         } catch (ExecutionException e) {
             ad = DEFAULT_AD;
+            // why here not cancel f?
         } catch (TimeoutException e) {
             ad = DEFAULT_AD;
             f.cancel(true);

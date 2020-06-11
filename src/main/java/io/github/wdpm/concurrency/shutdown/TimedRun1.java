@@ -7,7 +7,7 @@ import java.util.concurrent.TimeUnit;
 /**
  * InterruptBorrowedThread
  * <p/>
- * Scheduling an interrupt on a borrowed thread
+ * Scheduling an interrupt on a borrowed thread 在借用线程上安排中断
  *
  * @author Brian Goetz and Tim Peierls
  */

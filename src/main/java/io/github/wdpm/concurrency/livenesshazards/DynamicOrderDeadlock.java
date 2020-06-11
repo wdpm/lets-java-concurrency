@@ -10,12 +10,20 @@ import java.util.concurrent.atomic.AtomicInteger;
  * @author Brian Goetz and Tim Peierls
  */
 public class DynamicOrderDeadlock {
+    // A: transferMoney(myAccount, yourAccount, 10)
+    // B: transferMoney(yourAccount, myAccount, 20)
+    // 偶发时序中
+    // A 获得myAccount的锁，等待yourAccount
+    // B 获得yourAccount的锁，等待 myAccount
+    // 发生致命的拥抱
     // Warning: deadlock-prone!
-    public static void transferMoney(Account fromAccount, Account toAccount, DollarAmount amount) throws InsufficientFundsException {
+
+    // 思考：致命的拥抱的根源在于我们没有指定获取锁的顺序
+    public static void transferMoney(Account fromAccount, Account toAccount,
+                                     DollarAmount amount) throws InsufficientFundsException {
         synchronized (fromAccount) {
             synchronized (toAccount) {
-                if (fromAccount.getBalance().compareTo(amount) < 0)
-                    throw new InsufficientFundsException();
+                if (fromAccount.getBalance().compareTo(amount) < 0) throw new InsufficientFundsException();
                 else {
                     fromAccount.debit(amount);
                     toAccount.credit(amount);

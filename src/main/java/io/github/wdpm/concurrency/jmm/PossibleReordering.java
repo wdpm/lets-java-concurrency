@@ -28,6 +28,6 @@ public class PossibleReordering {
         other.start();
         one.join();
         other.join();
-        System.out.println("( " + x + "," + y + ")");
+        System.out.println("(" + x + "," + y + ")");
     }
 }
