@@ -430,3 +430,22 @@ void release(){
 - 总结：内部条件队列和内部锁，显式Condition和显式lock也是紧密联系。
 - 显式Condition条件的高级之处：多等待集每锁、可中断或不可中断、公平或不公平、超时机制。
 ---
+- 独占锁是悲观锁。
+- CAS：比较和交换。CAS有三个参数，分别是内存位置V，旧的期望值A，新值B。
+  - 如果V的值为A，那么我就使用B赋值给V。
+  - 否则，不修改，请返回V的当前值给我。
+- 模拟CAS。参阅 SimulatedCAS
+- CAS能够发现来自其他线程的干扰，不使用锁，也能原子化解决[读内存-修改-写内存]的问题。
+CAS提供原子性和可见性的保证。
+- CAS 实现的非阻塞计数器。参阅 CasCounter
+- 使用原子引用和CAS来构建并发Stack。参阅 ConcurrentStack
+- ConcurrentLinkedQueue中的原子化更新器。
+> java.util.concurrent.ConcurrentLinkedQueue.Node
+```java
+    static final class Node<E> {
+        volatile E item;
+        volatile Node<E> next;
+```
+- ABA问题。解决关键在于增加版本号。这样A->B->A，版本号是不一样。AtomicStampedReference和
+（以及同系列AtomicMarkableReference）提供了一对变量原子化的条件更新。
+---

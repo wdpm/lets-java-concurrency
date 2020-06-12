@@ -24,6 +24,7 @@ public class LinkedQueue<E> {
         }
     }
 
+    // 虚节点、或者称为哨兵节点
     private final Node<E> dummy = new Node<E>(null, null);
     private final AtomicReference<Node<E>> head
             = new AtomicReference<Node<E>>(dummy);
@@ -35,15 +36,17 @@ public class LinkedQueue<E> {
         while (true) {
             Node<E> curTail = tail.get();
             Node<E> tailNext = curTail.next.get();
+            // B D 都是帮忙推进tail指针
             if (curTail == tail.get()) {
-                if (tailNext != null) {
+                if (tailNext != null) {//A
                     // Queue in intermediate state, advance tail
-                    tail.compareAndSet(curTail, tailNext);
+                    tail.compareAndSet(curTail, tailNext);//B
                 } else {
+                    // quiescent 表示一般状态，就是非过渡的中间状态
                     // In quiescent state, try inserting new node
-                    if (curTail.next.compareAndSet(null, newNode)) {
+                    if (curTail.next.compareAndSet(null, newNode)) {//C
                         // Insertion succeeded, try advancing tail
-                        tail.compareAndSet(curTail, newNode);
+                        tail.compareAndSet(curTail, newNode);//D
                         return true;
                     }
                 }

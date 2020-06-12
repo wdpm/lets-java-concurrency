@@ -5,6 +5,6 @@ public class PseudoRandom {
 
     public int calculateNext(int seed) {
         lastSeed.set(seed);
-        return lastSeed.get() + 0;
+        return lastSeed.get();
     }
 }

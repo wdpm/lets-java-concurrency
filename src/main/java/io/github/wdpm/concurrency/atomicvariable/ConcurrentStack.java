@@ -13,8 +13,10 @@ import java.util.concurrent.atomic.AtomicReference;
  */
 @ThreadSafe
 public class ConcurrentStack<E> {
+    // ensure 可见性，类似volatile
     AtomicReference<Node<E>> top = new AtomicReference<Node<E>>();
 
+    // CAS 保证原子性修改
     public void push(E item) {
         Node<E> newHead = new Node<E>(item);
         Node<E> oldHead;
