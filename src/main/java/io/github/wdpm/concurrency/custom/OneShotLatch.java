@@ -16,13 +16,18 @@ public class OneShotLatch {
     private final Sync sync = new Sync();
 
     public void signal() {
-        sync.releaseShared(0);
+        sync.releaseShared(0);// delegate to tryReleaseShared
     }
 
     public void await() throws InterruptedException {
-        sync.acquireSharedInterruptibly(0);
+        // 一开始，闭锁是关闭的
+        // 任何调用await的线程都会阻塞，直到打开闭锁
+        sync.acquireSharedInterruptibly(0);// delegate to tryAcquireShared
     }
 
+    /**
+     * 继承AQS，重写XXShared方法，表示这是一个共享同步器
+     */
     private class Sync extends AbstractQueuedSynchronizer {
         protected int tryAcquireShared(int ignored) {
             // Succeed if latch is open (state == 1), else fail
@@ -32,7 +37,20 @@ public class OneShotLatch {
         protected boolean tryReleaseShared(int ignored) {
             setState(1); // Latch is now open
             return true; // Other threads may now be able to acquire
-
         }
+    }
+
+    public static void main(String[] args) throws InterruptedException {
+        OneShotLatch oneShotLatch = new OneShotLatch();
+        new Thread(() -> {
+            try {
+                oneShotLatch.await();
+                System.out.println("do something");
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        }).start();
+        Thread.sleep(3000);
+        oneShotLatch.signal();
     }
 }

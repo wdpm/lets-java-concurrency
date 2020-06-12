@@ -287,3 +287,146 @@ void blockingAction() throws InterruptedException{
 - 条件谓词。是先验条件的第一站，在一个操作和状态之间建立起依赖关系。
 - 锁对象和条件队列对象，必须为同一个对象。
 - 每条件队列-多条件谓词，非常常见，BoundedBuffer为“非满”和“非空”两个谓词使用了相同的条件队列。
+- 状态依赖方法的规范模式
+```java
+void stateDependentMethod throws InterruptedExcetion{
+     synchronized(lock){
+          while(!conditionPredicate){
+               lock.wait();
+          }
+     }
+}
+```
+- 使用条件等待时
+  - 永远设置一个条件谓词
+  - 永远在wait前测试条件谓词，并且从wait中返回后再次测试。
+  - 永远在循坏中调用wait
+  - 检查条件谓词之后，开始执行被保护的逻辑之前，不要释放锁。
+- 当你在等待一个条件，需要确保有人会在条件谓词变为true时通知你。
+- 只有同时满足以下条件时，才能用单一的notify取代notifyAll。
+  - 相同的等待者。只有一个条件谓词和条件队列相关。每个线程从wait返回后执行相同逻辑；并且
+  - 一进一出。一个对条件变量的通知，至多只激活一个线程执行。
+- 单一的通知和依据条件通知都是优化行为。
+- 一个依赖于状态的class，要么完全将它的等待和通知协议告诉子class，要么完全阻止子class参与其中。
+- 入口协议与出口协议
+  - 入口协议：操作的条件谓词，例如queue未满。于是可以进行操作：put
+  - 出口协议：涉及检查任何被操作改变的state变量，确认是否引起其他条件谓词的改变。如果是，请通知相关条件队列。
+- AbstractQueueSynchronizer 采用出口协议。它没有让Synchronizer自己去执行通知，而是
+要求同步方法返回一个值，这个值说明：它的动作是否可能阻塞了一个或者多个等待线程。
+- Condition接口提供了比内部条件队列更为丰富的特征集。每个锁可以有多个等待集。
+- 注意：wait、notify和notifyAll在Condition中对应await、signal、signalAll
+- 缓存为空，take阻塞，等待not-Empty；put向not-empty法信号，解除take引起的阻塞。
+- AQS是构建锁和Synchronizer的基础框架。大量同步工具都使用了AQS。
+- 基于AQS的Synchronizer进行的基本操作，是不同形式的获取和释放。
+  - 管理一个关于状态信息的单一整数state。
+  - ReentrantLock使用state来表示它的线程已经请求多少次锁
+  - Semaphore 使用state表示剩余许可数
+  - FutureTask使用state来表示任务的状态阶段，未开始、运行、完成、取消
+  - Synchronizer可以有自己的状态变量，例如ReentrantLock保存锁的追踪信息，区分是重入锁还是竞争条件锁。
+- AQS 锁的获取可能是独占的，例如ReentrantLock；也可以是非独占的，Semaphore和CountDownLatch。
+- AQS 中国获取锁和释放锁的规范模式
+```java
+boolean acquire() throws InterruptedException{
+    while(state does not permit acquire){
+         if(blocking acquisition requested){
+               enqueue current thread id not already queued
+               block current thread
+         }
+         else
+             return failure
+    }
+    possibly update synchronization state
+    dequeue thread if it was queued
+    return success
+}
+
+void release(){
+    update synchronization state
+    if (new state may permit a blocked thread to acquire)
+        unblocke one or more queued threads
+}
+```
+- 说明
+  - 支持独占获取的 Synchronizer 应实现 tryAcquire、tryRelease和isHeldExclusively
+  - 支持共享获取的 Synchronizer 应实现 tryAcquireShared 和 tryReleaseShared
+  - AQS的acquire、acquireShared、release、releaseShared这些方法，会调用
+  在 Synchronizer子类中这些版本的try-版本，以决定是否执行该操作。也就是说，将实现延迟到子类。
+  - Synchronizer子类根据 acquire和release的语意，使用getState、setState以及
+  compareAndSetState来检查并更新状态。通过返回值告知基类这次获取或者释放是否成功。
+  - 举例：从tryAcquireShared返回一个负值，代表获取失败；0表示独占获取，正值表示非独占获取。
+  - 举例：tryRelease和tryReleaseShared来说，如果可以解除一些阻塞线程的阻塞状态，就返回true
+- 二元闭锁。参阅 OneShotLatch
+- juc包下没有一个Synchronizer直接扩展AQS，而是委托给AQS私有内部类。
+- juc包下的Synchronizer
+  - ReentrantLock使用同步状态来持有锁获取的计数，还维护一个owner来持有当前拥有的线程的标记符。
+  - 非公平的ReentrantLock中tryAcquire的实现
+  > java.util.concurrent.locks.ReentrantLock.Sync.nonfairTryAcquire
+  ```java
+        @ReservedStackAccess
+        final boolean nonfairTryAcquire(int acquires) {
+            final Thread current = Thread.currentThread();
+            int c = getState();
+            if (c == 0) {
+                if (compareAndSetState(0, acquires)) {
+                    setExclusiveOwnerThread(current);
+                    return true;
+                }
+            }
+            else if (current == getExclusiveOwnerThread()) {
+                int nextc = c + acquires;
+                if (nextc < 0) // overflow
+                    throw new Error("Maximum lock count exceeded");
+                setState(nextc);
+                return true;
+            }
+            return false;
+        }
+  ```
+  - Semaphore使用AQS类型的同步状态来表示当前许可的数量。
+  > java.util.concurrent.Semaphore.Sync.nonfairTryAcquireShared
+  ```java
+          final int nonfairTryAcquireShared(int acquires) {
+              for (;;) {
+                  int available = getState();
+                  int remaining = available - acquires;
+                  if (remaining < 0 ||
+                      compareAndSetState(available, remaining))
+                      return remaining;
+              }
+          }
+  
+          protected final boolean tryReleaseShared(int releases) {
+              for (;;) {
+                  int current = getState();
+                  int next = current + releases;
+                  if (next < current) // overflow
+                      throw new Error("Maximum permit count exceeded");
+                  if (compareAndSetState(current, next))
+                      return true;
+              }
+          }
+   ```
+  - CountDownLatch和Semaphore类似。
+  > java.util.concurrent.CountDownLatch.Sync.tryAcquireShared
+  ```java
+          protected int tryAcquireShared(int acquires) {
+              return (getState() == 0) ? 1 : -1;
+          }
+  
+          protected boolean tryReleaseShared(int releases) {
+              // Decrement count; signal when transition to zero
+              for (;;) {
+                  int c = getState();
+                  if (c == 0)
+                      return false;
+                  int nextc = c - 1;
+                  if (compareAndSetState(c, nextc))
+                      return nextc == 0;
+              }
+          }
+  ```
+  - FutureTask使用AQS的同步状态来表示任务的执行状态：运行、完成、取消
+  - ReentrantReadWriteLock使用16位的状态为write lock计数，使用另一个16状态为read lock 计数。
+- 总结：内部条件队列和内部锁，显式Condition和显式lock也是紧密联系。
+- 显式Condition条件的高级之处：多等待集每锁、可中断或不可中断、公平或不公平、超时机制。
+---

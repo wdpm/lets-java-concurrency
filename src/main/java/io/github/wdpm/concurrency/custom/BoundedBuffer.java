@@ -64,6 +64,7 @@ public class BoundedBuffer<V> extends BaseBoundedBuffer<V> {
         boolean wasEmpty = isEmpty();
         doPut(v);
         /**
+         * 空 -> 非空
          * 条件通知，而不是每次put都通知。仅当上面判断为空是true时
          */
         if (wasEmpty) notifyAll();
