@@ -1,19 +1,18 @@
-# 阅读 JCIP
-> doc link and code link per item
-
-1. 简介
-2. 线程安全性 
-3. 对象的共享 
-4. 对象的组合 
-5. 基础构建模块 
-6. 任务执行 
-7. 取消与关闭 
-8. 线程池的使用 
-9. ?
-10. 避免活跃性危险 
-11. 性能与可伸缩性 
-12. 并发程序的测试 
-13. 显式锁 
-14. 构建自定义的同步工具 
-15. 原子变量与非阻塞同步机制 
-16. Java内存模型 
+# Lets java concurrency
+## 阅读 JCIP
+1. [简介](/docs/jcip/1.introduction.md)
+2. [线程安全性](docs/jcip/2.threadsafe.md)
+3. [对象的共享](docs/jcip/3.shareobject.md) 
+4. [对象的组合](docs/jcip/4.composingobjects.md) 
+5. [基础构建模块](docs/jcip/5.buildingblocks.md) 
+6. [任务执行](docs/jcip/6.taskexecution.md) 
+7. [取消与关闭](docs/jcip/7.shutdown.md) 
+8. [线程池的使用](docs/jcip/8.threadpools.md) 
+9. [图形用户界面应用程序](docs/jcip/9.guitool.md)
+10. [避免活跃性危险](docs/jcip/10.livenesshazards.md) 
+11. [性能与可伸缩性](docs/jcip/11.performance.md) 
+12. [并发程序的测试](docs/jcip/12.testingconcurrent.md) 
+13. [显式锁](docs/jcip/13.explicitlocks.md) 
+14. [构建自定义的同步工具](docs/jcip/14.custom.md) 
+15. [原子变量与非阻塞同步机制](docs/jcip/15.atomicvariable.md) 
+16. [Java内存模型](docs/jcip/16.jmm.md)
